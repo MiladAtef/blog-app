@@ -2,24 +2,40 @@
 <html lang="en">
 	<head>
 		<% include partials/header %>
-		<title>New Post</title>
+		<title>Edit Post</title>
 	</head>
 	<body>
 		<% include partials/navbar %>
 		<div class="ui container text segment main">
-			<div class="ui huge header">New Blog</div>
-			<form class="ui form" action="/blogs" method="POST">
+			<div class="ui huge header">Edit <%=blog.title%></div>
+			<form
+				class="ui form"
+				action="/blogs/<%=blog._id%>?_method=PUT"
+				method="POST"
+			>
 				<div class="field">
 					<label>Title</label>
-					<input type="text" name="blog[title]" required />
+					<input
+						type="text"
+						name="blog[title]"
+						required
+						value="<%=blog.title%>"
+					/>
 				</div>
 				<div class="field">
 					<label>Image url</label>
-					<input type="text" name="blog[image]" required />
+					<input
+						type="text"
+						name="blog[image]"
+						required
+						value="<%=blog.image%>"
+					/>
 				</div>
 				<div class="field">
 					<label>Blog content goes here...</label>
-					<textarea type="text" name="blog[body]" required></textarea>
+					<textarea type="text" name="blog[body]" required>
+<%=blog.body%></textarea
+					>
 				</div>
 				<div class="field">
 					<button class="ui button violet basic big" type="submit">

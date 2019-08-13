@@ -1,6 +1,8 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const methodOverride = require('method-override');
+const expressSanitizer = require('express-sanitizer');
 const app = express();
 
 require('./models/Blog');
@@ -10,7 +12,8 @@ mongoose.connect(
 	'mongodb://localhost:27017/blogapp',
 	{
 		useNewUrlParser: true,
-		useCreateIndex: true
+		useCreateIndex: true,
+		useFindAndModify: false
 	},
 	err => {
 		if (!err) {
@@ -25,13 +28,8 @@ app.set('view engine', 'ejs');
 app.use(express.static('public'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-
-// Blog.create({
-// 	title: 'first blog post',
-// 	image:
-// 		'https://images.unsplash.com/photo-1494545261862-dadfb7e1c13d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=750&q=80',
-// 	body: 'this is my first blog post people!'
-// });
+app.use(methodOverride('_method'));
+app.use(expressSanitizer());
 
 app.get('/', (req, res) => {
 	res.redirect('/blogs');
@@ -51,7 +49,9 @@ app.get('/blogs/new', (req, res) => {
 });
 
 app.post('/blogs', async (req, res) => {
-	const { blog } = req.body;
+	let { blog } = req.body;
+	//we sanitize the body of the blog post from any  script tags
+	blog.body = req.sanitize(blog.body);
 	try {
 		if (blog.body && blog.title && blog.image) {
 			const newBlog = new Blog(blog);
@@ -62,6 +62,49 @@ app.post('/blogs', async (req, res) => {
 		}
 	} catch (e) {
 		return res.status(400).json('something wrong!');
+	}
+});
+
+app.get('/blogs/:id', async (req, res) => {
+	const { id } = req.params;
+	try {
+		const blog = await Blog.findById(id);
+		res.render('show', { blog });
+	} catch (e) {
+		res.status(404).send('not found!');
+	}
+});
+
+app.get('/blogs/:id/edit', async (req, res) => {
+	const { id } = req.params;
+	try {
+		const blog = await Blog.findById(id);
+		res.render('edit', { blog });
+	} catch (e) {
+		res.redirect('/blogs');
+	}
+});
+
+app.put('/blogs/:id', async (req, res) => {
+	const { id } = req.params;
+	let { blog } = req.body;
+	//we sanitize the body of the blog post from any script tags
+	blog.body = req.sanitize(blog.body);
+	try {
+		await Blog.findOneAndUpdate({ _id: id }, blog);
+		res.redirect(`/blogs/${id}`);
+	} catch (e) {
+		res.redirect('/blogs');
+	}
+});
+
+app.delete('/blogs/:id', async (req, res) => {
+	const { id } = req.params;
+	try {
+		await Blog.findOneAndDelete({ _id: id });
+		res.redirect(`/blogs`);
+	} catch (e) {
+		res.redirect('/blogs');
 	}
 });
 

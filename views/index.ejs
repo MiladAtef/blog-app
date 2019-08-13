@@ -6,13 +6,36 @@
 	</head>
 	<body>
 		<% include partials/navbar %>
-		<div class="ui container main">
-			<%blogs.forEach(({body,created,title,image})=>{%>
-			<h2><%= title %></h2>
-			<img src="<%= image %>" />
-			<span><%= created.toLocaleString() %></span>
-			<p><%= body %></p>
-			<%})%>
+		<div class="ui container text main">
+			<div class="ui huge header">Blog App</div>
+			<div class="ui top attached segment">
+				<div class="ui divided items">
+					<%blogs.forEach(({body,created,title,image,_id})=>{%>
+					<div class="item">
+						<div class="image">
+							<img src="<%= image %>" />
+						</div>
+						<div class="content">
+							<a href="/blogs/<%=_id%>" class="header"><%= title %></a>
+							<div class="meta">
+								<span>
+									<%= created.toDateString() %>
+								</span>
+							</div>
+							<div class="description">
+								<p><%- body.substring(0,100) %>...</p>
+							</div>
+							<div class="extra">
+								<a class="ui floated violet basic button" href="/blogs/<%=_id%>"
+									>Read more
+									<i class="right chevron icon small"></i>
+								</a>
+							</div>
+						</div>
+					</div>
+					<%})%>
+				</div>
+			</div>
 		</div>
 		<% include partials/footer %>
 	</body>
